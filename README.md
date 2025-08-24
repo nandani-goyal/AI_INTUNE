@@ -35,13 +35,14 @@ InTune is a **voice-powered AI platform** that helps users find emotionally and 
 
 ```mermaid
 flowchart TD
-    A[Register & Verify Identity (OCR)] --> B[Voice Onboarding (Omnidim AI)]
+    A[Register and Verify Identity (OCR)] --> B[Voice Onboarding (Omnidim AI)]
     B --> C[AI Matching Engine calculates compatibility]
     C --> D[Browse top matches on MatchMeter]
     D --> E[Start secure chats via ChatterBox]
     E --> F[StyleMatch suggests room decor]
     F --> G[SplitMate tracks expenses]
     G --> H[GuideBot assists in conflict resolution]
+
 
 
 ---
