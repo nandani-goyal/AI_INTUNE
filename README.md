@@ -42,10 +42,11 @@ flowchart TD
     E --> F{Roommate Chosen?}
     
     F -->|Yes| G[StyleMatch Decor Suggestions]
-    F -->|No| D   %% Loop back to browsing matches
+    F -->|No| D
 
     G --> H[SplitMate Tracks Expenses]
     H --> I[GuideBot Conflict Resolution]
+
 
 ```
 
