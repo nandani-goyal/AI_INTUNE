@@ -39,9 +39,14 @@ flowchart TD
     B --> C[AI Matching Engine]
     C --> D[Browse Matches on MatchMeter]
     D --> E[Start Secure Chats via ChatterBox]
-    E --> F[StyleMatch Decor Suggestions]
-    F --> G[SplitMate Tracks Expenses]
-    G --> H[GuideBot Conflict Resolution]
+    E --> F{Roommate Chosen?}
+    
+    F -->|Yes| G[StyleMatch Decor Suggestions]
+    F -->|No| D   %% Loop back to browsing matches
+
+    G --> H[SplitMate Tracks Expenses]
+    H --> I[GuideBot Conflict Resolution]
+
 ```
 
 
