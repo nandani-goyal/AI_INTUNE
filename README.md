@@ -42,7 +42,7 @@ flowchart TD
     E --> F[StyleMatch Decor Suggestions]
     F --> G[SplitMate Tracks Expenses]
     G --> H[GuideBot Conflict Resolution]
-
+```
 
 
 
