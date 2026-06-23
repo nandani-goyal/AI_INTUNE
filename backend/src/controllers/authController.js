@@ -42,6 +42,7 @@ export const loginUser = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      anonymousId: user.anonymousId,
       token: genToken(user._id)
     });
   } catch (err) {

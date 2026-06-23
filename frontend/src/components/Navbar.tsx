@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-
+import { useAuth } from "@/context/AuthContext";
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  // const { user } = useAuth();
+  const { user, logout } = useAuth();
+  
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Features", href: "/features" },
@@ -39,17 +41,40 @@ const Navbar = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login">
-              <Button variant="minimal" size="sm">
-                Login
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button variant="hero" size="sm">
-                Sign Up
-              </Button>
-            </Link>
-          </div>
+
+  {user ? (
+    <>
+      <Link to="/dashboard">
+        <Button variant="minimal" size="sm">
+          Dashboard
+        </Button>
+      </Link>
+
+      <Button
+        variant="hero"
+        size="sm"
+        onClick={logout}
+      >
+        Logout
+      </Button>
+    </>
+  ) : (
+    <>
+      <Link to="/login">
+        <Button variant="minimal" size="sm">
+          Login
+        </Button>
+      </Link>
+
+      <Link to="/signup">
+        <Button variant="hero" size="sm">
+          Sign Up
+        </Button>
+      </Link>
+    </>
+  )}
+
+</div>
 
           {/* Mobile menu button */}
           <div className="md:hidden">
@@ -78,17 +103,39 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="flex flex-col space-y-2 pt-4">
-                <Link to="/login">
-                  <Button variant="minimal" size="sm" className="w-full">
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/signup">
-                  <Button variant="hero" size="sm" className="w-full">
-                    Sign Up
-                  </Button>
-                </Link>
-              </div>
+  {user ? (
+    <>
+      <Link to="/dashboard">
+        <Button variant="minimal" size="sm" className="w-full">
+          Dashboard
+        </Button>
+      </Link>
+
+      <Button
+        variant="hero"
+        size="sm"
+        className="w-full"
+        onClick={logout}
+      >
+        Logout
+      </Button>
+    </>
+  ) : (
+    <>
+      <Link to="/login">
+        <Button variant="minimal" size="sm" className="w-full">
+          Login
+        </Button>
+      </Link>
+
+      <Link to="/signup">
+        <Button variant="hero" size="sm" className="w-full">
+          Sign Up
+        </Button>
+      </Link>
+    </>
+  )}
+</div>
             </div>
           </div>
         )}

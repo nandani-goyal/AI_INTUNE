@@ -2,21 +2,23 @@
 import OmniWidget from "./omniWidget";
 import VoiceMatchCard from "./VoiceMatchCard";
 import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
+import VoiceMatchChat from "./VoiceMatchChat";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const VoiceMatchSection = () => {
-  const handleStartChat = (cardType: string) => {
-    try {
-      
-      toast({
-      title: "Voice Match Started",
-      description: `Starting ${cardType} voice matching session...`,
-    });
-    console.log(`Starting chat for: ${cardType}`);
-    } catch (error) {
-      
-    }
-    
-  };
+  const [showChat,setShowChat] = useState(false);
+  
+ const handleStartChat = () => {
+
+   setShowChat(true);
+
+};
 
   return (
     <section className="relative py-20 px-6 bg-gradient-to-br from-light-cream via-creamy-beige to-soft-sand overflow-hidden">
@@ -41,6 +43,22 @@ const VoiceMatchSection = () => {
         </div>
 
         {/* Voice Match Cards */}
+        <Dialog
+  open={showChat}
+  onOpenChange={setShowChat}
+>
+  <DialogContent>
+
+    <DialogHeader>
+      <DialogTitle>
+        Voice Matching Assistant
+      </DialogTitle>
+    </DialogHeader>
+
+    <VoiceMatchChat />
+
+  </DialogContent>
+</Dialog>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Roommate Preference - Required */}
           <VoiceMatchCard
@@ -48,7 +66,7 @@ const VoiceMatchSection = () => {
             description="Share your ideal roommate qualities, lifestyle preferences, and compatibility factors through a natural conversation with our AI assistant."
             isRequired={true}
             icon="users"
-            onStartChat={() => handleStartChat("Roommate Preferences")}
+            onStartChat={handleStartChat}
           />
 
           {/* Room Preference - Required */}
@@ -57,7 +75,7 @@ const VoiceMatchSection = () => {
             description="Describe your perfect living space, location preferences, amenities, and budget requirements in a conversational format."
             isRequired={true}
             icon="home"
-            onStartChat={() => handleStartChat("Room Preferences")}
+            onStartChat={handleStartChat}
           />
 
           {/* Lifestyle & Habits - Optional */}
@@ -68,7 +86,7 @@ const VoiceMatchSection = () => {
             isOptional={true}
             accuracyBoost={true}
             icon="star"
-            onStartChat={() => handleStartChat("Lifestyle & Habits")}
+            onStartChat={handleStartChat}
           />
         </div>
 
@@ -87,9 +105,10 @@ const VoiceMatchSection = () => {
           </div>
         </div>
       </div>
-      <OmniWidget></OmniWidget>
+      {/* <OmniWidget></OmniWidget> */}
      </section>
   );
 };
+
 
 export default VoiceMatchSection;

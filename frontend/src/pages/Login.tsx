@@ -10,16 +10,16 @@ import { Mail, Lock, ArrowRight, Home } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { API } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { toast } = useToast();
+  const { setUser } = useAuth();
 
-  /* ───────────────────────────────────────────────
-   helper: POST to <backend>/api/<path>
-   (Put these two lines near the top, after imports)
-──────────────────────────────────────────────── */
+const navigate = useNavigate();
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api";
 
 async function request<T>(path: string, body: unknown): Promise<T> {
@@ -46,11 +46,25 @@ const handleLogin = async (e: React.FormEvent) => {
 
   try {
     /* 1️⃣  hit the Express login endpoint */
-    type Resp = { token: string; name: string; email: string };
+    type Resp = {
+  token: string;
+  _id: string;
+  name: string;
+  email: string;
+  anonymousId: string;
+};
     const data = await request<Resp>("/auth/login", { email, password });
 
     /* 2️⃣  persist JWT so subsequent requests can include it */
     localStorage.setItem("token", data.token);
+    localStorage.setItem("token", data.token);
+
+setUser({
+  _id: data._id,
+  name: data.name,
+  email: data.email,
+  anonymousId: data.anonymousId
+});
     // setUser({ _id: data._id, name: data.name, email: data.email, anonymousId: data.anonymousId });
 
     /* 3️⃣  user feedback + redirect */
@@ -60,7 +74,7 @@ const handleLogin = async (e: React.FormEvent) => {
     });
 
     // if you already use react-router’s useNavigate:
-    // navigate("/dashboard");
+    navigate("/dashboard");
   } catch (err: any) {
     toast({
       title: "Login failed",

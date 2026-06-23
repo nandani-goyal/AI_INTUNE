@@ -6,9 +6,22 @@ const userSchema = new mongoose.Schema(
     name:        { type: String, required: true },
     email:       { type: String, required: true, unique: true },
     password:    { type: String, required: true },
-    anonymousId: { type: String, required: true, unique: true } //  👈 NEW
+    anonymousId: { type: String, required: true, unique: true }, 
+    voiceProfile: {
+   roommatePreference: String,
+   sleepSchedule: String,
+   cleanliness: String,
+   socialLife: String,
+   cookingHabits: String,
+   dailyRoutine: String,
+   } ,
+   profileText: String,
+   embedding:[Number]
+
   },
-  { timestamps: true }
+
+  { timestamps: true },
+  
 );
 
 
@@ -22,5 +35,6 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.matchPassword = async function (enteredPwd) {
   return bcrypt.compare(enteredPwd, this.password);
 };
+
 
 export default mongoose.model('User', userSchema);

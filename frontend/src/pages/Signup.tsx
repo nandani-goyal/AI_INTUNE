@@ -79,7 +79,7 @@ const handleSignup = async (e: React.FormEvent) => {
       });
       return;
     }
-
+    console.log(formData);
     if (!formData.agreeToTerms || !formData.agreeToPrivacy) {
       toast({
         title: "Agreement required",
@@ -361,8 +361,8 @@ const handleGoogleSignup = () => {
                       <div className="flex items-center space-x-2">
                         <Checkbox 
                           id="terms" 
-                          // checked={formData.agreeToTerms}
-                          // onCheckedChange={(checked) => handleInputChange('agreeToTerms', checked as boolean)}
+                          checked={formData.agreeToTerms}
+                           onCheckedChange={(checked) => handleInputChange('agreeToTerms', checked as boolean)}
                         />
                         <label htmlFor="terms" className="text-sm text-muted-foreground">
                           I agree to the{" "}
