@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Key, User } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 interface MatchData {
   anon_id: string;
   match_score: number;
@@ -14,7 +14,7 @@ interface MatchData {
     lifestyle: number;
     food: number;
   };
-  chatroom_passkey: string;
+  // chatroom_passkey: string;
 }
 
 interface MatchCardProps {
@@ -24,6 +24,7 @@ interface MatchCardProps {
 }
 
 const MatchCard = ({ match, rank, onMessage }: MatchCardProps) => {
+  const navigate = useNavigate();
   const criteriaIcons = {
     cleanliness: "🧼",
     sleep_schedule: "🌙",
@@ -68,7 +69,7 @@ const MatchCard = ({ match, rank, onMessage }: MatchCardProps) => {
               <h3 className="text-lg font-semibold text-foreground">{match.anon_id}</h3>
               <div className="flex items-center space-x-2">
                 <Key className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">PassKey: {match.chatroom_passkey}</span>
+                {/* <span className="text-sm text-muted-foreground">PassKey: {match.chatroom_passkey}</span> */}
               </div>
             </div>
           </div>
@@ -119,11 +120,15 @@ const MatchCard = ({ match, rank, onMessage }: MatchCardProps) => {
         </div>
 
         {/* Action Button */}
-        <Button 
-          variant="message" 
-          className="w-full"
-          onClick={() => onMessage(match.chatroom_passkey)}
-        >
+        <Button
+
+variant="message"
+
+className="w-full"
+
+onClick={()=>navigate("/chat")}
+
+>
           <MessageCircle className="h-4 w-4 mr-2" />
           Start Conversation
         </Button>

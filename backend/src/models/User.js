@@ -16,8 +16,15 @@ const userSchema = new mongoose.Schema(
    dailyRoutine: String,
    } ,
    profileText: String,
-   embedding:[Number]
-
+   embedding:[Number],
+   embeddings:{
+   roommatePreference:[Number],
+   sleepSchedule:[Number],
+   cleanliness:[Number],
+   socialLife:[Number],
+   cookingHabits:[Number],
+   dailyRoutine:[Number]
+}
   },
 
   { timestamps: true },

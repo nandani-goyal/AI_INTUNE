@@ -8,6 +8,8 @@ import ChatList from "@/components/ChatList";
 import ChatEmbed from "@/components/ChatEmbed";
 import RoommateRevealDialog from "@/components/RoommateRevealDialog";
 import heroRoommateImg from "@/assets/hero-roommate.jpg";
+import socket from "@/lib/socket";
+import { useEffect } from "react";
 
 interface User {
   id: string;
@@ -23,7 +25,15 @@ interface User {
 const Chat = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [revealDialogOpen, setRevealDialogOpen] = useState(false);
+  useEffect(() => {
 
+    socket.connect();
+
+    return () => {
+        socket.disconnect();
+    };
+
+}, []);
   const handleUserSelect = (user: User) => {
     setSelectedUser(user);
   };
@@ -75,10 +85,13 @@ const Chat = () => {
       <div className="flex-1 flex">
         {/* Left sidebar - Chat list */}
         <div className="w-full lg:w-96 border-r border-border bg-card">
-          <ChatList 
-            // onUserSelect={handleUserSelect}
-            selectedUser={selectedUser}
-          />
+          <ChatList
+
+selectedUser={selectedUser}
+
+onUserSelect={handleUserSelect}
+
+/>
         </div>
 
         {/* Right area - Chat embed */}

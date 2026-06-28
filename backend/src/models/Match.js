@@ -17,7 +17,14 @@ const matchSchema = new mongoose.Schema(
     score: {
       type: Number,
       required: true
-    }
+    },
+    criteriaScores:{
+  cleanliness:Number,
+  sleep_schedule:Number,
+  social_habits:Number,
+  lifestyle:Number,
+  food:Number
+}
   },
   { timestamps: true }
 );

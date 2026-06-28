@@ -45,9 +45,62 @@ const data = await response.json();
 console.log("Embedding length:", data.embedding?.length);
 console.log("First 5 values:", data.embedding?.slice(0,5));
 user.embedding = data.embedding;
-console.log("Modified paths:", user.modifiedPaths());
+
+const fields = {
+  roommatePreference:
+    req.body.roommatePreference,
+
+  sleepSchedule:
+    req.body.sleepSchedule,
+
+  cleanliness:
+    req.body.cleanliness,
+
+  socialLife:
+    req.body.socialLife,
+
+  cookingHabits:
+    req.body.cookingHabits,
+
+  dailyRoutine:
+    req.body.dailyRoutine
+};
+user.embeddings = {};
+
+for(const key in fields){
+
+ const response = await fetch(
+  "http://localhost:8000/embed",
+  {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      text:fields[key]
+    })
+  }
+ );
+
+ const data =
+  await response.json();
+
+ user.embeddings[key] =
+  data.embedding;
+}
 
     await user.save();
+    await fetch(
+  `http://localhost:${process.env.PORT}/api/matches/generate`,
+  {
+    method: "POST",
+    headers: {
+      Authorization:
+        req.headers.authorization
+    }
+  }
+);
+    
     const updatedUser = await User.findById(user._id);
 
 console.log(

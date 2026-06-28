@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -8,74 +8,76 @@ import MatchCard from "@/components/MatchCard";
 import MatchAnalytics from "@/components/MatchAnalytics";
 import { TrendingUp, Users, Heart, MessageSquare } from "lucide-react";
 import heroImage from "@/assets/hero-roommates.jpg";
-
+// import { useEffect } from "react";
 // Mock data with user-specified IDs and passkeys
-const mockMatches = [
-  {
-    anon_id: "MOON_1305",
-    match_score: 88,
-    criteria_scores: {
-      cleanliness: 92,
-      sleep_schedule: 78,
-      social_habits: 85,
-      lifestyle: 88,
-      food: 65
-    },
-    chatroom_passkey: "123"
-  },
-  {
-    anon_id: "CLOUD_7097",
-    match_score: 85,
-    criteria_scores: {
-      cleanliness: 88,
-      sleep_schedule: 90,
-      social_habits: 82,
-      lifestyle: 85,
-      food: 75
-    },
-    chatroom_passkey: "456"
-  },
-  {
-    anon_id: "SUN_5672",
-    match_score: 82,
-    criteria_scores: {
-      cleanliness: 85,
-      sleep_schedule: 75,
-      social_habits: 90,
-      lifestyle: 80,
-      food: 80
-    },
-    chatroom_passkey: "777"
-  },
-  {
-    anon_id: "STAR_4357",
-    match_score: 79,
-    criteria_scores: {
-      cleanliness: 80,
-      sleep_schedule: 85,
-      social_habits: 75,
-      lifestyle: 82,
-      food: 73
-    },
-    chatroom_passkey: "098"
-  },
-  {
-    anon_id: "CLOUD_8433",
-    match_score: 76,
-    criteria_scores: {
-      cleanliness: 75,
-      sleep_schedule: 82,
-      social_habits: 78,
-      lifestyle: 76,
-      food: 69
-    },
-    chatroom_passkey: "678"
-  }
-];
 
 const MatchMeter = () => {
   const { toast } = useToast();
-  const [matches] = useState(mockMatches);
+ const [matches, setMatches] = useState<any[]>([]);
+  useEffect(() => {
+
+   const fetchMatches = async () => {
+
+    try {
+
+      const token =
+        localStorage.getItem("token");
+
+      const res = await fetch(
+        "http://localhost:5000/api/matches",
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+      const data = await res.json();
+
+      const transformed =
+        data.map((m:any)=>({
+
+          anon_id:
+            m.user2.anonymousId,
+
+          passkey:
+            m.user2._id.slice(-6),
+
+          match_score:
+            m.score,
+
+          criteria_scores: {
+  cleanliness: m.criteriaScores?.cleanliness || m.score,
+
+  sleep_schedule:
+    m.criteriaScores?.sleep_schedule || m.score,
+
+  social_habits:
+    m.criteriaScores?.social_habits || m.score,
+
+  lifestyle:
+    m.criteriaScores?.lifestyle || m.score,
+
+  food:
+    m.criteriaScores?.food || m.score
+}
+
+        }));
+
+      setMatches(transformed);
+
+    } catch(err){
+
+      console.error(err);
+
+    }
+
+  };
+
+  fetchMatches();
+
+}, []);
   const currentUser = "MOON_3289"; // Main ID taken - current user
 
   const handleMessage = (passkey: string) => {
@@ -89,8 +91,17 @@ const MatchMeter = () => {
     console.log(`Opening chat with passkey: ${passkey}`);
   };
 
-  const averageMatch = Math.round(matches.reduce((sum, match) => sum + match.match_score, 0) / matches.length);
-
+  const averageMatch =
+  matches.length > 0
+    ? Math.round(
+        matches.reduce(
+          (sum:any, match:any) =>
+            sum + match.match_score,
+          0
+        ) / matches.length
+      )
+    : 0;
+ console.log(matches);
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -101,14 +112,14 @@ const MatchMeter = () => {
           <img 
             src={heroImage} 
             alt="Perfect roommate matches" 
-            className="w-full h-full object-cover opacity-20"
+            className="w-full h-full object-cover opacity-30"
           />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-primary mb-6">
             Your Perfect Matches
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-muted-foreground mb-10 white max-w-3xl mx-auto leading-relaxed">
             Discover your top 5 compatibility matches based on lifestyle, habits, and preferences. 
             Your vibe, your tribe, your perfect living situation.
           </p>

@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Users } from "lucide-react";
 import chatIconsImg from "@/assets/chat-icons.jpg";
-
+import socket from "@/lib/socket";
+import { API } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 interface User {
   id: string;
   name: string;
@@ -19,100 +21,123 @@ interface User {
 interface ChatEmbedProps {
   selectedUser: User | null;
 }
+interface Message {
+  sender: {
+    _id: string;
+    anonymousId: string;
+  };
+
+  text: string;
+
+  createdAt: string;
+}
+
 
 const ChatEmbed = ({ selectedUser }: ChatEmbedProps) => {
-  const [messages, setMessages] = useState<Array<{text: string, isMe: boolean, time: string}>>([]);
-  const [newMessage, setNewMessage] = useState("");
+  const { user } = useAuth();
 
-  const getInitialConversation = (userId: string) => {
-    const conversations = {
-      "MOON_1305": [
-        { text: "Hi there! I saw we matched with 92% compatibility 🎉", isMe: false, time: "10:30 AM" },
-        { text: "Hey! That's amazing! What's your sleep schedule like?", isMe: true, time: "10:32 AM" },
-        { text: "I'm definitely a night owl 🦉 Usually sleep around 1-2 AM. You?", isMe: false, time: "10:35 AM" },
-        { text: "Perfect! Same here. Are you okay with having friends over occasionally?", isMe: true, time: "10:37 AM" },
-        { text: "Absolutely! I love hosting movie nights. How do you feel about cleanliness?", isMe: false, time: "10:40 AM" },
-      ],
-      "CLOUD_7097": [
-        { text: "Hello! Excited about our 85% match rate!", isMe: false, time: "2:15 PM" },
-        { text: "Hi! Yes, I'm looking forward to learning more about you.", isMe: true, time: "2:18 PM" },
-        { text: "What's your study routine like? I'm pretty focused during exam weeks.", isMe: false, time: "2:20 PM" },
-        { text: "I prefer quiet study time too. Do you listen to music while studying?", isMe: true, time: "2:22 PM" },
-      ],
-      "SUN_5672": [
-        { text: "Hey roomie! 78% compatibility sounds promising!", isMe: false, time: "11:45 AM" },
-        { text: "Hello! I'd love to know about your daily routine.", isMe: true, time: "11:48 AM" },
-        { text: "I'm an early bird! Up by 6 AM for morning jogs. Hope that's not too loud?", isMe: false, time: "11:50 AM" },
-        { text: "Not at all! I wake up early too. Do you have any dietary restrictions?", isMe: true, time: "11:52 AM" },
-      ],
-      "STAR_4357": [
-        { text: "Hi! Our 88% match looks really good!", isMe: false, time: "4:20 PM" },
-        { text: "Hello! Tell me about your lifestyle preferences.", isMe: true, time: "4:23 PM" },
-        { text: "I'm pretty social but respect quiet time. Love weekend game nights!", isMe: false, time: "4:25 PM" },
-        { text: "That sounds fun! How often do you have people over?", isMe: true, time: "4:27 PM" },
-      ],
-      "CLOUD_8433": [
-        { text: "Hey there! 83% compatibility - let's chat!", isMe: false, time: "7:10 PM" },
-        { text: "Hi! What are you studying?", isMe: true, time: "7:13 PM" },
-        { text: "Computer Science! You? I sometimes code late but I use headphones.", isMe: false, time: "7:15 PM" },
-        { text: "Business major here! No worries about late coding. Do you smoke?", isMe: true, time: "7:17 PM" },
-      ]
-    };
-    
-    return conversations[userId as keyof typeof conversations] || [
-      { text: "Hey! Looking forward to getting to know you better!", isMe: false, time: "12:00 PM" }
-    ];
-  };
+const [messages, setMessages] = useState<Message[]>([]);
 
-  const getAutoResponse = (userMessage: string) => {
-    const responses = [
-      "That sounds great! Tell me more about that.",
-      "I totally agree with you on that point!",
-      "Interesting! How do you usually handle that?",
-      "That's exactly what I was thinking too!",
-      "I'd love to hear more about your experience with that.",
-      "That makes a lot of sense to me.",
-      "I think we're really compatible on this topic!",
-      "That's a great way to look at it.",
-      "I've had similar experiences actually.",
-      "That sounds like a perfect arrangement to me!"
-    ];
-    
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
+const [chatId,setChatId] = useState("");
 
-  useEffect(() => {
-    if (selectedUser) {
-      setMessages(getInitialConversation(selectedUser.id));
+const [newMessage,setNewMessage] = useState("");
+useEffect(() => {
+
+    if (!selectedUser) return;
+
+    loadChat();
+
+}, [selectedUser]);
+
+const loadChat = async () => {
+
+    try {
+
+        const token = localStorage.getItem("token");
+
+        // Create or get existing chat
+        const res = await fetch(
+            "http://localhost:5000/api/chat",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    matchedUserId: selectedUser?.id
+                })
+            }
+        );
+        console.log(selectedUser);
+        const chat = await res.json();
+
+        setChatId(chat._id);
+
+        socket.emit("join-chat", chat._id);
+
+        // Fetch old messages
+        const msgRes = await fetch(
+            `http://localhost:5000/api/chat/${chat._id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const msgs = await msgRes.json();
+
+        setMessages(msgs);
+
     }
-  }, [selectedUser]);
+
+    catch (err) {
+
+        console.log(err);
+
+    }
+
+};
+useEffect(() => {
+
+    socket.on("receive-message", (message) => {
+
+        setMessages(prev => [...prev, message]);
+
+    });
+
+    return () => {
+
+        socket.off("receive-message");
+
+    };
+
+}, []);
+ 
+
+  
+
+
+  
 
   const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
-    
-    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    // Add user message
-    const userMessage = {
-      text: newMessage,
-      isMe: true,
-      time: currentTime
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    setNewMessage("");
-    
-    // Auto-generate response after 1-2 seconds
-    setTimeout(() => {
-      const autoResponse = {
-        text: getAutoResponse(newMessage),
-        isMe: false,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages(prev => [...prev, autoResponse]);
-    }, 1000 + Math.random() * 1000);
-  };
 
+    if (!newMessage.trim()) return;
+
+    socket.emit("send-message",{
+
+chatId,
+
+sender:user?._id,
+
+text:newMessage
+
+});
+
+setNewMessage("");
+
+};
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSendMessage();
@@ -171,22 +196,25 @@ const ChatEmbed = ({ selectedUser }: ChatEmbedProps) => {
         {messages.map((message, index) => (
           <div 
             key={index}
-            className={`flex ${message.isMe ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${message.sender._id === user?._id ? 'justify-end' : 'justify-start'}`}
           >
             <div 
               className={`p-3 rounded-lg max-w-xs shadow-sm ${
-                message.isMe 
+               message.sender._id === user?._id 
                   ? 'bg-primary text-primary-foreground' 
                   : 'bg-white text-foreground'
               }`}
             >
               <p className="text-sm">{message.text}</p>
               <span className={`text-xs ${
-                message.isMe 
+               message.sender._id === user?._id
                   ? 'text-primary-foreground/80' 
                   : 'text-muted-foreground'
               }`}>
-                {message.time}
+                {new Date(message.createdAt).toLocaleTimeString([], {
+hour: "2-digit",
+minute: "2-digit"
+})}
               </span>
             </div>
           </div>
