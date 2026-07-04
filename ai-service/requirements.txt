@@ -1,4 +1,3 @@
 sentence-transformers
 scikit-learn
 flask
-socket.io
