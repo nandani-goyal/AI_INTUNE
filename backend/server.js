@@ -40,7 +40,9 @@ const PORT = process.env.PORT || 5000;
 const io=new Server(server,{
 
    cors:{
-      origin:"http://localhost:8080",
+      origin:["http://localhost:8080",
+          "https://your-project.vercel.app"
+      ],
       methods:["GET","POST"]
    }
 
