@@ -57,7 +57,7 @@ const loadChat = async () => {
 
         // Create or get existing chat
         const res = await fetch(
-            "http://localhost:5000/api/chat",
+            `${import.meta.env.VITE_BACKEND_URL}/api/api/chat`,
             {
                 method: "POST",
                 headers: {
@@ -78,7 +78,7 @@ const loadChat = async () => {
 
         // Fetch old messages
         const msgRes = await fetch(
-            `http://localhost:5000/api/chat/${chat._id}`,
+             `${import.meta.env.VITE_BACKEND_URL}/api/chat/${chat._id}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`

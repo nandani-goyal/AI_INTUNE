@@ -36,7 +36,7 @@ const Signup = () => {
   };
 
   // 👇 ADD just these two helpers at the top of the component file (after imports)
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL ??  `${import.meta.env.VITE_BACKEND_URL}/api`;
 
 async function request<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {

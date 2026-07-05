@@ -60,7 +60,7 @@ const handleNext = async () => {
   const token = localStorage.getItem("token");
 
   const res = await fetch(
-    "http://localhost:5000/api/profile/voice-profile",
+     `${import.meta.env.VITE_BACKEND_URL}/api/profile/voice-profile`,
     {
       method: "POST",
       headers: {

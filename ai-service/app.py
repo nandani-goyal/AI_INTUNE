@@ -1,5 +1,5 @@
 # app.py
-
+import os
 from flask import Flask, request, jsonify
 from sentence_transformers import SentenceTransformer
 

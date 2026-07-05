@@ -29,7 +29,7 @@ ${req.body.cookingHabits}
 ${req.body.dailyRoutine}
 `;
 const response = await fetch(
-  "http://localhost:8000/embed",
+  "https://nanda-ai-intune-ai-service.hf.space/embed",
   {
     method: "POST",
     headers: {
@@ -70,7 +70,7 @@ user.embeddings = {};
 for(const key in fields){
 
  const response = await fetch(
-  "http://localhost:8000/embed",
+  "https://nanda-ai-intune-ai-service.hf.space/embed",
   {
     method:"POST",
     headers:{

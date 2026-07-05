@@ -34,7 +34,7 @@ const ChatList = ({ selectedUser, onUserSelect }: Props) => {
 
       const res=await fetch(
 
-        "http://localhost:5000/api/matches",
+         `${import.meta.env.VITE_BACKEND_URL}/api/matches`,
 
         {
 
