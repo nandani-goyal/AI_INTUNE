@@ -1,4 +1,5 @@
+Flask
 sentence-transformers
+torch
+numpy
 scikit-learn
-flask
-socket.io
