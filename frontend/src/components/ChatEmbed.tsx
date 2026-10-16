@@ -57,7 +57,7 @@ const loadChat = async () => {
 
         // Create or get existing chat
         const res = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/api/api/chat`,
+            `${import.meta.env.VITE_BACKEND_URL}/api/chat`,
             {
                 method: "POST",
                 headers: {

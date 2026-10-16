@@ -1,8 +1,46 @@
 import User from "../models/User.js";
 
+const getEmbeddingFromService = async (text) => {
+  const serviceUrls = [
+    process.env.AI_SERVICE_URL,
+    "http://127.0.0.1:7860/embed",
+    "http://localhost:7860/embed",
+    "https://nanda-ai-intune-ai-service.hf.space/embed"
+  ].filter(Boolean);
+
+  let lastError = null;
+
+  for (const url of serviceUrls) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data && Array.isArray(data.embedding)) {
+          return data.embedding;
+        }
+      }
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  console.warn("Could not generate embedding from AI service:", lastError?.message || "Service unavailable");
+  return null;
+};
+
 export const saveVoiceProfile = async (req, res) => {
   try {
-
     const user = await User.findById(req.user._id);
 
     if (!user) {
@@ -11,115 +49,81 @@ export const saveVoiceProfile = async (req, res) => {
       });
     }
 
+    // 1. Assign voice profile answers immediately
     user.voiceProfile = {
-      roommatePreference: req.body.roommatePreference,
-      sleepSchedule: req.body.sleepSchedule,
-      cleanliness: req.body.cleanliness,
-      socialLife: req.body.socialLife,
-      cookingHabits: req.body.cookingHabits,
-      dailyRoutine: req.body.dailyRoutine
+      roommatePreference: req.body.roommatePreference || "",
+      sleepSchedule: req.body.sleepSchedule || "",
+      cleanliness: req.body.cleanliness || "",
+      socialLife: req.body.socialLife || "",
+      cookingHabits: req.body.cookingHabits || "",
+      dailyRoutine: req.body.dailyRoutine || ""
     };
 
     user.profileText = `
-${req.body.roommatePreference}
-${req.body.sleepSchedule}
-${req.body.cleanliness}
-${req.body.socialLife}
-${req.body.cookingHabits}
-${req.body.dailyRoutine}
-`;
-const response = await fetch(
-  "https://nanda-ai-intune-ai-service.hf.space/embed",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type":"application/json"
-    },
-    body: JSON.stringify({
-      text:user.profileText
-    })
-  }
-);
+${user.voiceProfile.roommatePreference}
+${user.voiceProfile.sleepSchedule}
+${user.voiceProfile.cleanliness}
+${user.voiceProfile.socialLife}
+${user.voiceProfile.cookingHabits}
+${user.voiceProfile.dailyRoutine}
+`.trim();
 
-const data = await response.json();
-console.log("Embedding length:", data.embedding?.length);
-console.log("First 5 values:", data.embedding?.slice(0,5));
-user.embedding = data.embedding;
-
-const fields = {
-  roommatePreference:
-    req.body.roommatePreference,
-
-  sleepSchedule:
-    req.body.sleepSchedule,
-
-  cleanliness:
-    req.body.cleanliness,
-
-  socialLife:
-    req.body.socialLife,
-
-  cookingHabits:
-    req.body.cookingHabits,
-
-  dailyRoutine:
-    req.body.dailyRoutine
-};
-user.embeddings = {};
-
-for(const key in fields){
-
- const response = await fetch(
-  "https://nanda-ai-intune-ai-service.hf.space/embed",
-  {
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-      text:fields[key]
-    })
-  }
- );
-
- const data =
-  await response.json();
-
- user.embeddings[key] =
-  data.embedding;
-}
-
-    await user.save();
-    await fetch(
-  `http://localhost:${process.env.PORT}/api/matches/generate`,
-  {
-    method: "POST",
-    headers: {
-      Authorization:
-        req.headers.authorization
+    // 2. Fetch overall embedding
+    const overallEmbedding = await getEmbeddingFromService(user.profileText);
+    if (overallEmbedding) {
+      user.embedding = overallEmbedding;
     }
-  }
-);
-    
-    const updatedUser = await User.findById(user._id);
 
-console.log(
-  "Saved embedding length:",
-  updatedUser.embedding?.length
-);
-    console.log(
-  "Saved user embedding"
-);
+    // 3. Fetch per-field embeddings
+    const fields = {
+      roommatePreference: user.voiceProfile.roommatePreference,
+      sleepSchedule: user.voiceProfile.sleepSchedule,
+      cleanliness: user.voiceProfile.cleanliness,
+      socialLife: user.voiceProfile.socialLife,
+      cookingHabits: user.voiceProfile.cookingHabits,
+      dailyRoutine: user.voiceProfile.dailyRoutine
+    };
+
+    user.embeddings = user.embeddings || {};
+
+    for (const key in fields) {
+      if (fields[key]) {
+        const fieldEmbedding = await getEmbeddingFromService(fields[key]);
+        if (fieldEmbedding) {
+          user.embeddings[key] = fieldEmbedding;
+        }
+      }
+    }
+
+    // 4. Save to MongoDB - this ensures voiceProfile is ALWAYS saved!
+    await user.save();
+    console.log("Voice profile and embeddings saved to MongoDB for user:", user._id);
+
+    // 5. Trigger match generation if local port is available
+    const port = process.env.PORT || 5000;
+    try {
+      if (req.headers.authorization && user.embedding) {
+        await fetch(`http://127.0.0.1:${port}/api/matches/generate`, {
+          method: "POST",
+          headers: {
+            Authorization: req.headers.authorization
+          }
+        });
+      }
+    } catch (matchErr) {
+      console.warn("Auto match generation warning:", matchErr.message);
+    }
 
     res.status(200).json({
-      msg: "Voice profile saved successfully"
+      msg: "Voice profile saved successfully",
+      voiceProfile: user.voiceProfile,
+      hasEmbeddings: Boolean(user.embedding && user.embedding.length > 0)
     });
 
   } catch (err) {
-
+    console.error("Error in saveVoiceProfile:", err);
     res.status(500).json({
       msg: err.message
     });
-
   }
 };
