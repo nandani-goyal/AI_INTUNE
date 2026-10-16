@@ -41,7 +41,7 @@ const io=new Server(server,{
 
    cors:{
       origin:["http://localhost:8080",
-          "https://your-project.vercel.app"
+          "https://ai-intune.vercel.app/"
       ],
       methods:["GET","POST"]
    }
