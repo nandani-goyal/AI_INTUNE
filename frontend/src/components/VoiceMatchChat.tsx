@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BACKEND_URL } from "@/lib/api";
 
 const questions = [
   "Describe your ideal roommate.",
@@ -62,13 +63,7 @@ const VoiceMatchChat = () => {
           return;
         }
 
-        const backendUrl =
-          import.meta.env.VITE_BACKEND_URL ||
-          (import.meta.env.VITE_API_BASE_URL
-            ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, "")
-            : "http://localhost:5000");
-
-        const res = await fetch(`${backendUrl}/api/profile/voice-profile`, {
+        const res = await fetch(`${BACKEND_URL}/api/profile/voice-profile`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -84,7 +79,16 @@ const VoiceMatchChat = () => {
           })
         });
 
-        const data = await res.json();
+        const contentType = res.headers.get("content-type") || "";
+        let data: any = {};
+        if (contentType.includes("application/json")) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          throw new Error(
+            `Backend returned non-JSON response (${res.status} ${res.statusText}). Check your backend URL or server logs.`
+          );
+        }
 
         if (!res.ok) {
           throw new Error(data.msg || "Failed to save voice profile");

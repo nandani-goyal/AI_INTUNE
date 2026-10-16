@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BACKEND_URL } from "@/lib/api";
 
 interface MatchUser {
   id: string;
@@ -34,7 +35,7 @@ const ChatList = ({ selectedUser, onUserSelect }: Props) => {
 
       const res=await fetch(
 
-         `${import.meta.env.VITE_BACKEND_URL}/api/matches`,
+         `${BACKEND_URL}/api/matches`,
 
         {
 

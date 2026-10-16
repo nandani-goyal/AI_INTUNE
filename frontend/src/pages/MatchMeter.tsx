@@ -8,6 +8,7 @@ import MatchCard from "@/components/MatchCard";
 import MatchAnalytics from "@/components/MatchAnalytics";
 import { TrendingUp, Users, Heart, MessageSquare } from "lucide-react";
 import heroImage from "@/assets/hero-roommates.jpg";
+import { BACKEND_URL } from "@/lib/api";
 // import { useEffect } from "react";
 // Mock data with user-specified IDs and passkeys
 
@@ -24,7 +25,7 @@ const MatchMeter = () => {
         localStorage.getItem("token");
 
       const res = await fetch(
-         `${import.meta.env.VITE_BACKEND_URL}/api/matches`,
+         `${BACKEND_URL}/api/matches`,
         {
           headers: {
             Authorization:

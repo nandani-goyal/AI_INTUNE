@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Send, Users } from "lucide-react";
 import chatIconsImg from "@/assets/chat-icons.jpg";
 import socket from "@/lib/socket";
-import { API } from "@/lib/api";
+import { API, BACKEND_URL } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 interface User {
   id: string;
@@ -57,7 +57,7 @@ const loadChat = async () => {
 
         // Create or get existing chat
         const res = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/api/chat`,
+            `${BACKEND_URL}/api/chat`,
             {
                 method: "POST",
                 headers: {
@@ -78,7 +78,7 @@ const loadChat = async () => {
 
         // Fetch old messages
         const msgRes = await fetch(
-             `${import.meta.env.VITE_BACKEND_URL}/api/chat/${chat._id}`,
+             `${BACKEND_URL}/api/chat/${chat._id}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`
